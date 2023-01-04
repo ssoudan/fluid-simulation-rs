@@ -446,7 +446,7 @@ impl Fluid {
 
 #[wasm_bindgen]
 impl Fluid {
-    pub fn new(gravity: f32, num_x: usize, num_y: usize, h: f32, density: f32) -> Fluid {
+    pub fn create(gravity: f32, num_x: usize, num_y: usize, h: f32, density: f32) -> Fluid {
         let num_x = num_x + 2; // 2 border cells
         let num_y = num_y + 2;
 

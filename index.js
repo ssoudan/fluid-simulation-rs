@@ -51,7 +51,7 @@ import('./pkg')
 
         const gravity = -9.81;
 
-        const fluid = wasm.Fluid.new(gravity, numX, numY, h, density)
+        const fluid = wasm.Fluid.create(gravity, numX, numY, h, density)
 
         fluid.clear_obstacles();
         // fluid.tank();
