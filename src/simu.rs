@@ -5,25 +5,7 @@
 use std::vec;
 
 use wasm_bindgen::{prelude::*, Clamped};
-use web_sys::console;
 use web_sys::{CanvasRenderingContext2d, ImageData};
-
-pub struct Timer<'a> {
-    name: &'a str,
-}
-
-impl<'a> Timer<'a> {
-    pub fn new(name: &'a str) -> Timer<'a> {
-        console::time_with_label(name);
-        Timer { name }
-    }
-}
-
-impl<'a> Drop for Timer<'a> {
-    fn drop(&mut self) {
-        console::time_end_with_label(self.name);
-    }
-}
 
 /// A fluid simulation.
 ///
@@ -159,16 +141,15 @@ impl Fluid {
         }
     }
 
-    // TODO(ssoudan) document
     fn extrapolate(&mut self) {
         let n = self.num_y;
 
         for i in 0..self.num_x {
-            self.u[i * n + 0] = self.u[i * n + 1];
+            self.u[i * n /* + 0*/] = self.u[i * n + 1];
             self.u[i * n + self.num_y - 1] = self.u[i * n + self.num_y - 2];
         }
         for j in 0..self.num_y {
-            self.v[0 * n + j] = self.v[1 * n + j];
+            self.v[/*0 * n + */ j] = self.v[/* 1* */ n + j];
             self.v[(self.num_x - 1) * n + j] = self.v[(self.num_x - 2) * n + j];
         }
     }
@@ -212,32 +193,28 @@ impl Fluid {
         let sx = 1. - tx;
         let sy = 1. - ty;
 
-        let val = sx * sy * f[x0 as usize * n + y0 as usize]
+        sx * sy * f[x0 as usize * n + y0 as usize]
             + tx * sy * f[x1 as usize * n + y0 as usize]
             + tx * ty * f[x1 as usize * n + y1 as usize]
-            + sx * ty * f[x0 as usize * n + y1 as usize];
-
-        val
+            + sx * ty * f[x0 as usize * n + y1 as usize]
     }
 
     fn avg_u(&self, i: usize, j: usize) -> f32 {
         let n = self.num_y;
-        let u = (self.u[i * n + j - 1]
+        (self.u[i * n + j - 1]
             + self.u[i * n + j]
             + self.u[(i + 1) * n + j - 1]
             + self.u[(i + 1) * n + j])
-            * 0.25;
-        u
+            * 0.25
     }
 
     fn avg_v(&self, i: usize, j: usize) -> f32 {
         let n = self.num_y;
-        let v = (self.v[(i - 1) * n + j]
+        (self.v[(i - 1) * n + j]
             + self.v[i * n + j]
             + self.v[(i - 1) * n + j + 1]
             + self.v[i * n + j + 1])
-            * 0.25;
-        v
+            * 0.25
     }
 
     fn advect_velocity(&mut self, dt: f32) {
@@ -319,10 +296,12 @@ impl Fluid {
         self.m = self.new_m.clone();
     }
 
+    /// Return the pressure field
     pub fn pressure(&self) -> Vec<f32> {
         self.p.clone()
     }
 
+    /// Draw the simulation on the given canvas.
     pub fn draw(
         &self,
         options: DrawOptions,
@@ -350,7 +329,6 @@ impl Fluid {
                     let color = get_sci_color(p, min_p, max_p);
 
                     image.paint(i - 1, j - 1, color);
-                    // FIXME(ssoudan) scaling between simulation and canvas - HiDPI?
                 }
             }
         }
@@ -362,7 +340,6 @@ impl Fluid {
                     if self.s[i * n + j] == 0. {
                         let color = [0, 0, 0, 255];
 
-                        // FIXME(ssoudan) scaling between simulation and canvas - HiDPI?
                         image.paint(i - 1, j - 1, color);
                     }
                 }
@@ -372,9 +349,9 @@ impl Fluid {
         let width = image.width as u32;
         let height = image.height as u32;
 
-        let mut data = image.data;
+        let data = image.data;
 
-        let data = ImageData::new_with_u8_clamped_array_and_sh(Clamped(&mut data), width, height)?;
+        let data = ImageData::new_with_u8_clamped_array_and_sh(Clamped(&data), width, height)?;
         let r = ctx.put_image_data(&data, 0.0, 0.0);
 
         let text = format!("min: {:.2} max: {:.2} - {:.2} fps", min_p, max_p, 1. / dt);
@@ -432,6 +409,7 @@ impl Fluid {
         r
     }
 
+    /// Simulate the fluid for the given time step.
     pub fn simulate(&mut self, dt: f32, num_iters: u32, over_relaxation: f32) {
         self.integrate(dt, self.gravity);
 
@@ -451,14 +429,14 @@ impl Fluid {
         let num_y = num_y + 2;
 
         let num_cells = num_x * num_y;
-        let u = vec![0.0; num_cells as usize];
-        let v = vec![0.0; num_cells as usize];
-        let new_u = vec![0.0; num_cells as usize];
-        let new_v = vec![0.0; num_cells as usize];
-        let p = vec![0.0; num_cells as usize];
-        let s = vec![0.0; num_cells as usize];
-        let m = vec![1.0; num_cells as usize];
-        let new_m = vec![0.0; num_cells as usize];
+        let u = vec![0.0; num_cells];
+        let v = vec![0.0; num_cells];
+        let new_u = vec![0.0; num_cells];
+        let new_v = vec![0.0; num_cells];
+        let p = vec![0.0; num_cells];
+        let s = vec![0.0; num_cells];
+        let m = vec![1.0; num_cells];
+        let new_m = vec![0.0; num_cells];
         Fluid {
             gravity,
             density,
@@ -521,7 +499,7 @@ impl Fluid {
         let max_j = f32::floor(0.5 * self.num_y as f32 + 0.5 * pipe_h) as usize;
 
         for j in min_j..max_j {
-            self.m[1 * n + j] = 0.;
+            self.m[n + j] = 0.;
         }
 
         self.gravity = 0.;
@@ -547,7 +525,7 @@ impl Fluid {
 
                 let d = (dx * dx + dy * dy).sqrt();
 
-                if d < r as f32 {
+                if d < r {
                     self.s[i * n + j] = 0.0;
 
                     self.m[i * n + j] = 1.0;
@@ -580,7 +558,7 @@ impl Image {
         let width = width * resolution;
         let height = height * resolution;
 
-        let data = vec![0 as u8; 4 * width * height];
+        let data = vec![0_u8; 4 * width * height];
         Self {
             data,
             width,
