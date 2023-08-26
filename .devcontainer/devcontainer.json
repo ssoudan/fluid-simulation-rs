@@ -28,7 +28,8 @@
 				"ms-toolsai.jupyter",
 				"GitHub.copilot",
 				"rust.rust-analyzer",
-				"github.copilot-chat"
+				"github.copilot-chat",
+				"github.vscode-github-actions"
 			]
 		}
 	},
