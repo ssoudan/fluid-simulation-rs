@@ -1,26 +1,38 @@
 <html>
 
-  <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
-  </head>
-  <body>
-    
-   
-      <!-- <div class="controls">
-        <h1>C =</h1>
-        <div>
-          <label for="real">real</label>
-          <input type="number" name="real" id="real" value="-0.15" step="0.001">
-        </div>
-        <div>
-          <label for="imaginary">imaginary</label>
-          <input type="number" name="imaginary" id="imaginary" value="0.65" step="0.001">
-        </div>
-        <button class="button-primary" id="render">render</button>
-      </div> -->
-      <canvas id="canvas" style="border:2px solid" width="1200" height="600"></canvas>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+</head>
 
-      <!-- <canvas id="simu"></canvas> -->
-    
-  </body>
+<body>
+
+  <h1>Eulerian Fluid Simulation</h1>
+  <div class="controls">
+    <div>
+      <!-- scenario  -->
+      <label for="scenario">Scenario</label>
+      <select name="scenario" id="scenario">
+        <option value="vortex_shedding">Vortex Shedding</option>
+        <option value="tank">Tank</option>
+      </select>
+
+      <!-- checkbox for pressure -->
+      <input type="checkbox" id="pressure" name="pressure" value="pressure" checked>
+      <label for="pressure">Pressure</label>
+
+      <!-- checkbox for streamlines -->
+      <input type="checkbox" id="streamlines" name="streamlines" value="streamlines" checked>
+      <label for="streamlines">Streamlines</label>
+
+    </div>
+  </div>
+
+  <div>
+    <canvas id="canvas" style="border:2px solid" width="1200" height="600"></canvas>
+  </div>
+
+  <!-- <canvas id="simu"></canvas> -->
+
+</body>
+
 </html>

@@ -1,28 +1,28 @@
 import('./pkg')
     .then(wasm => {
-        // const canvas = document.getElementById('drawing');
-        // const ctx = canvas.getContext('2d');
+        // Get the scenario selector
+        const scenario_selector = document.getElementById("scenario");
 
-        // const realInput = document.getElementById('real');
-        // const imaginaryInput = document.getElementById('imaginary');
-        // const renderBtn = document.getElementById('render');
+        // Get the pressure checkbox
+        const pressure_checkbox = document.getElementById("pressure");
 
-        // renderBtn.addEventListener('click', () => {
-        //     const real = parseFloat(realInput.value) || 0;
-        //     const imaginary = parseFloat(imaginaryInput.value) || 0;
-        //     wasm.draw(ctx, 600, 600, real, imaginary);
-        // });
+        // Get the streamlines checkbox
+        const streamlines_checkbox = document.getElementById("streamlines");
 
-        // wasm.draw(ctx, 600, 600, -0.15, 0.65);
+        // Get the canvas element
+        const simu_canvas = document.getElementById("canvas");
 
-        // setup the simulation loop
+        // Get the canvas context
+        const simu_context = simu_canvas.getContext("2d");
 
-        const simu_canvas = document.getElementById('canvas');
+        // Get the width and height of the canvas
+        const simu_width = simu_canvas.width;
+        const simu_height = simu_canvas.height;
 
-        const res = 75.;
+        // Clear the canvas
+        simu_context.clearRect(0, 0, simu_width, simu_height);
 
-        simu_canvas.focus();
-
+        // Configure the simulation
         console.log("simu_canvas.width: " + simu_canvas.width + " simu_canvas.height: " + simu_canvas.height);
 
         var aspectRatio = simu_canvas.width / simu_canvas.height;
@@ -32,7 +32,7 @@ import('./pkg')
         var domainWidth = domainHeight * aspectRatio;
         console.log("domainWidth: " + domainWidth + " domainHeight: " + domainHeight);
 
-        var h = domainHeight / res;
+        var h = domainHeight / 75.;
 
         var numX = Math.floor(domainWidth / h);
         var numY = Math.floor(domainHeight / h);
@@ -50,13 +50,17 @@ import('./pkg')
 
         const gravity = -9.81;
 
+        // Create the fluid simulation
         const fluid = wasm.Fluid.create(gravity, numX, numY, h, density)
 
+        // Setup the obstacles
         fluid.clear_obstacles();
-        // fluid.tank();
-        fluid.vortex_shedding();
 
-        wasm.run(dt, numIters, overrelaxation, fluid, simu_canvas, sim_to_canvas_ratio)
+        // Run the simulation
+        wasm.run_with_selector(dt, numIters, overrelaxation, fluid,
+            simu_canvas, scenario_selector,
+            pressure_checkbox, streamlines_checkbox,
+            sim_to_canvas_ratio)
 
     })
     .catch(console.error);

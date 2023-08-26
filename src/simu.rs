@@ -379,7 +379,7 @@ impl Fluid {
 
         let text = format!("min: {:.2} max: {:.2} - {:.2} fps", min_p, max_p, 1. / dt);
 
-        ctx.fill_text(&text, 12., 12.);
+        let _ = ctx.fill_text(&text, 12., 12.);
 
         // draw stream line
         if options.streamlines {
@@ -406,7 +406,7 @@ impl Fluid {
                     ctx.begin_path();
                     ctx.move_to(cx, cy);
 
-                    for k in 0..NUM_SEGS {
+                    for _k in 0..NUM_SEGS {
                         let u = self.sample_field(x, y, Field::U);
                         let v = self.sample_field(x, y, Field::V);
 
