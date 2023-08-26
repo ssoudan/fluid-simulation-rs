@@ -21,3 +21,10 @@ jobs:
             cargo clippy --all-targets --all-features -- -D warnings            
             npm install 
             npm run build
+      
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
