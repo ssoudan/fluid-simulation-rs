@@ -15,10 +15,11 @@ jobs:
 
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
-        with:          
+        with:                    
           runCmd: |
             cargo test --all-targets --all-features
             cargo clippy --all-targets --all-features -- -D warnings            
+            cargo build
             npm install 
             npm run build
       
