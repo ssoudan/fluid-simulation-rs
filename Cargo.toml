@@ -1,8 +1,13 @@
 [package]
-name = "julia_set"
+name = "fluid-simulation-rs"
 version = "0.1.0"
-authors = ["The wasm-bindgen Developers"]
+authors = ["Sebastien Soudan <sebastien.soudan@gmail.com>"]
 edition = "2018"
+
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/ssoudan/fluid-simulation-rs"
+
+description = "A fluid simulation in Rust"
 
 [lib]
 crate-type = ["cdylib"]

@@ -1,4 +1,3 @@
-pub mod fractal;
 pub mod simu;
 
 use std::cell::RefCell;

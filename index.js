@@ -15,13 +15,12 @@ import('./pkg')
 
         // wasm.draw(ctx, 600, 600, -0.15, 0.65);
 
-
         // setup the simulation loop
 
         const simu_canvas = document.getElementById('canvas');
-        
+
         const res = 75.;
-    
+
         simu_canvas.focus();
 
         console.log("simu_canvas.width: " + simu_canvas.width + " simu_canvas.height: " + simu_canvas.height);
@@ -38,7 +37,7 @@ import('./pkg')
         var numX = Math.floor(domainWidth / h);
         var numY = Math.floor(domainHeight / h);
         console.log("numX: " + numX + " numY: " + numY);
-    
+
         var sim_to_canvas_ratio = simu_canvas.width / numX;
         console.log("sim_to_canvas_ratio: " + sim_to_canvas_ratio);
 
@@ -56,7 +55,7 @@ import('./pkg')
         fluid.clear_obstacles();
         // fluid.tank();
         fluid.vortex_shedding();
-        
+
         wasm.run(dt, numIters, overrelaxation, fluid, simu_canvas, sim_to_canvas_ratio)
 
     })

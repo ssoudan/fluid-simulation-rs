@@ -12,6 +12,6 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
-    "wasm-pack": "^0.10.3"
+    "wasm-pack": "^0.11.0"
   }
 }

@@ -388,7 +388,7 @@ impl Fluid {
 
             let real_to_canvas = sim_to_canvas_ratio as f64 / self.h as f64;
 
-            const num_segs: u32 = 10;
+            const NUM_SEGS: u32 = 10;
             let seg_len = 0.01;
 
             ctx.set_stroke_style(&"rgba(255, 0, 0, 1.)".into());
@@ -406,7 +406,7 @@ impl Fluid {
                     ctx.begin_path();
                     ctx.move_to(cx, cy);
 
-                    for k in 0..num_segs {
+                    for k in 0..NUM_SEGS {
                         let u = self.sample_field(x, y, Field::U);
                         let v = self.sample_field(x, y, Field::V);
 
