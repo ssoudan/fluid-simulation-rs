@@ -13,15 +13,23 @@ jobs:
       - name: Checkout (GitHub)
         uses: actions/checkout@v3
 
+      - name: Create directories
+        run: |
+          mkdir dist
+          touch dist/.gitkeep
+          mkdir target
+          touch target/.gitkeep
+          mkdir node_modules
+          touch node_modules/.gitkeep
+
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
-        with:                    
-          skipContainerUserIdUpdate: true
+        with:                              
           runCmd: |
             cargo test --all-targets --all-features
             cargo clippy --all-targets --all-features -- -D warnings            
             cargo build
-            npm install 
+            npm install  
             npm run build
       
       - name: Publish artifacts
