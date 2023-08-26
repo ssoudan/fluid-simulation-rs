@@ -33,6 +33,7 @@ pub fn run_with_selector(
     scenario_selector: web_sys::HtmlSelectElement,
     pressure_checkbox: web_sys::HtmlInputElement,
     streamlines_checkbox: web_sys::HtmlInputElement,
+    colormap_selector: web_sys::HtmlSelectElement,
     sim_to_canvas_ratio: u32,
 ) -> Result<(), JsValue> {
     let f = Rc::new(RefCell::new(None));
@@ -54,10 +55,13 @@ pub fn run_with_selector(
 
         let streamlines = streamlines_checkbox.checked();
 
+        let colormap_value = colormap_selector.value();
+
         let options = DrawOptions {
             pressure,
             obstacle: true,
             streamlines,
+            colormap: colormap_value,
         };
 
         // What scenario are we in?
@@ -75,6 +79,7 @@ pub fn run_with_selector(
                             fluid.clear_obstacles();
                             fluid.tank();
                         }
+                        // TODO(ssoudan) add a tesla valve scenario
                         _ => {
                             fluid.clear_obstacles();
                             fluid.vortex_shedding();

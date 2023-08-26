@@ -9,6 +9,9 @@ import('./pkg')
         // Get the streamlines checkbox
         const streamlines_checkbox = document.getElementById("streamlines");
 
+        // Get the colormap selector
+        const colormap_selector = document.getElementById("colormap");
+
         // Get the canvas element
         const simu_canvas = document.getElementById("canvas");
 
@@ -60,6 +63,7 @@ import('./pkg')
         wasm.run_with_selector(dt, numIters, overrelaxation, fluid,
             simu_canvas, scenario_selector,
             pressure_checkbox, streamlines_checkbox,
+            colormap_selector,
             sim_to_canvas_ratio)
 
     })

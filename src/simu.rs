@@ -323,10 +323,17 @@ impl Fluid {
 
         // pressure
         if options.pressure {
+            let colormap: Box<dyn Colormap> = match options.colormap.as_str() {
+                "jet" => Box::new(JetColormap {}),
+                "coolwarm" => Box::new(CoolWarmColormap {}),
+                "rainbow" => Box::new(RainbowColormap {}),
+                _ => panic!("unknown colormap"),
+            };
+
             for i in 1..self.num_x - 1 {
                 for j in 1..self.num_y - 1 {
                     let p = self.p[i * n + j];
-                    let color = get_sci_color(p, min_p, max_p);
+                    let color = colormap.get_color(p, min_p, max_p);
 
                     image.paint(i - 1, j - 1, color);
                 }
@@ -474,6 +481,7 @@ impl Fluid {
         }
     }
 
+    /// flow in a pipe and around a circular obstacle with no gravity
     pub fn vortex_shedding(&mut self) {
         let in_vel = 2.0;
 
@@ -503,13 +511,13 @@ impl Fluid {
         }
 
         self.gravity = 0.;
-        self.set_obstacle(0.4, 0.5, 0.3)
+        self.add_circular_obstacle(0.4, 0.5, 0.3)
     }
 
     // TODO(ssoudan) NACA profile
 
-    /// set obstacles
-    pub fn set_obstacle(&mut self, x: f32, y: f32, r: f32) {
+    /// add circular obstacle
+    pub fn add_circular_obstacle(&mut self, x: f32, y: f32, r: f32) {
         let vx = 0.0;
         let vy = 0.0;
 
@@ -544,6 +552,7 @@ pub struct DrawOptions {
     pub pressure: bool,
     pub obstacle: bool,
     pub streamlines: bool,
+    pub colormap: String,
 }
 
 struct Image {
@@ -585,25 +594,76 @@ impl Image {
     }
 }
 
-fn get_sci_color(x: f32, min_: f32, max_: f32) -> [u8; 4] {
-    let x = f32::min(f32::max(x, min_), max_ - 0.0001);
-    let d = max_ - min_;
-    let x = if d == 0. { 0.5 } else { (x - min_) / d };
-    let m = 0.25;
-    let num = f32::floor(x / m);
-    let s = (x - num * m) / m;
+trait Colormap {
+    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4];
+}
 
-    let (r, g, b) = match num as u8 {
-        0 => (1.0, s, 0.0),
-        1 => (0.0, 1.0, 1. - s),
-        2 => (s, 1.0, 0.),
-        3 => (1.0, 1.0 - s, 0.0),
-        4 => (1.0, 1.0 - s, 0.0),
-        _ => panic!("should not happen"),
-    };
+struct JetColormap {}
 
-    let r = (r * 255.0) as u8;
-    let g = (g * 255.0) as u8;
-    let b = (b * 255.0) as u8;
-    [r, g, b, 255]
+impl Colormap for JetColormap {
+    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
+        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
+        let d = max_ - min_;
+        let x = if d == 0. { 0.5 } else { (x - min_) / d };
+        let m = 0.25;
+        let num = f32::floor(x / m);
+        let s = (x - num * m) / m;
+
+        let (r, g, b) = match num as u8 {
+            0 => (0.0, s, 1.0),
+            1 => (0.0, 1.0, 1. - s),
+            2 => (s, 1.0, 0.),
+            3 => (1.0, 1.0 - s, 0.0),
+            4 => (1.0, 1.0 - s, 0.0),
+            _ => panic!("should not happen"),
+        };
+
+        let r = (r * 255.0) as u8;
+        let g = (g * 255.0) as u8;
+        let b = (b * 255.0) as u8;
+        [r, g, b, 255]
+    }
+}
+
+struct CoolWarmColormap {}
+
+impl Colormap for CoolWarmColormap {
+    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
+        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
+        let d = max_ - min_;
+        let x = if d == 0. { 0.5 } else { (x - min_) / d };
+
+        let r = 0.5 * (1.0 + x);
+        let b = 1.0 - r;
+        let g = 1.0 - (r + b);
+
+        let r = (r * 255.0) as u8;
+        let g = (g * 255.0) as u8;
+        let b = (b * 255.0) as u8;
+        [r, g, b, 255]
+    }
+}
+
+/// Rainbow colormap
+struct RainbowColormap {}
+
+impl Colormap for RainbowColormap {
+    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
+        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
+        let d = max_ - min_;
+        let x = if d == 0. { 0.5 } else { (x - min_) / d };
+
+        let r = if x < 0.5 {
+            1.0 - 2.0 * x
+        } else {
+            2.0 * (x - 0.5)
+        };
+        let g = if x < 0.5 { 2.0 * x } else { 2.0 * (1.0 - x) };
+        let b = if x < 0.5 { 2.0 * x } else { 0.0 };
+
+        let r = (r * 255.0) as u8;
+        let g = (g * 255.0) as u8;
+        let b = (b * 255.0) as u8;
+        [r, g, b, 255]
+    }
 }
