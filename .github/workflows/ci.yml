@@ -15,13 +15,14 @@ jobs:
 
       - name: Create directories
         run: |
-          mkdir -p dist          
-          mkdir -p target          
-          mkdir -p node_modules          
+          mkdir dist          
+          mkdir target          
+          mkdir node_modules          
 
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
-        with:                                
+        with: 
+          skipContainerUserIdUpdate: true
           runCmd: |
             id
             ls -lah
