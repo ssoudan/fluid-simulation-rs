@@ -15,8 +15,12 @@ jobs:
 
       - name: Create directories
         run: |
-          mkdir dist
+          mkdir -p dist
           touch dist/.gitkeep
+          mkdir -p target
+          touch target/.gitkeep
+          mkdir -p node_modules
+          touch node_modules/.gitkeep
 
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
