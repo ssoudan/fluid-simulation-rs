@@ -28,6 +28,8 @@ jobs:
           runCmd: |
             cargo test --all-targets --all-features
             cargo clippy --all-targets --all-features -- -D warnings            
+            id
+            ls -lah
             cargo build
             npm install  
             npm run build
