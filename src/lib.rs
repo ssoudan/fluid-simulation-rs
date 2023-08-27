@@ -1,6 +1,7 @@
 //! This is the main entry point for the WASM module.
 pub mod simu;
 pub mod utils;
+pub mod visualization;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -104,7 +105,7 @@ pub fn run_with_selector(
         }
 
         fluid
-            .draw(options, dt, sim_to_canvas_ratio, &context)
+            .render(options, dt, sim_to_canvas_ratio, &context)
             .expect("draw failed");
 
         // Schedule ourself for another requestAnimationFrame callback.

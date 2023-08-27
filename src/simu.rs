@@ -2,10 +2,12 @@
 //!
 //! From https://www.youtube.com/watch?v=iKAVRgIrUOU&list=PL-GwXAGjZ9fUf_7_MiBbPuLSJVp_3Edmq&index=1&t=6s
 //! Code from https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqazhqYnZnQVliZFVwSjdzMVdnSnpfbGJYdkRCZ3xBQ3Jtc0tueVZhRGl4TVdhM25Xa0JEcXRPcmNqNzVpR1VkX3FINzUzZktVY1IxS3I2MWpXNDJfdm9XeExDUTFlbUwwVDY5WW1rZkY4TkR1eE9mTWZIclpDU0ZaVFBIM19qNGdxTjBfZGZGTU9STFVwU1V2a2JmOA&q=https%3A%2F%2Fmatthias-research.github.io%2Fpages%2FtenMinutePhysics%2Findex.html
-use std::vec;
+use std::{convert::TryInto, vec};
 
-use wasm_bindgen::{prelude::*, Clamped};
-use web_sys::{CanvasRenderingContext2d, ImageData};
+use wasm_bindgen::prelude::*;
+use web_sys::CanvasRenderingContext2d;
+
+use crate::visualization;
 
 /// A fluid simulation.
 ///
@@ -301,8 +303,8 @@ impl Fluid {
         self.p.clone()
     }
 
-    /// Draw the simulation on the given canvas.
-    pub fn draw(
+    /// Render the simulation on the given canvas.
+    pub fn render(
         &self,
         options: DrawOptions,
         dt: f32,
@@ -319,16 +321,13 @@ impl Fluid {
 
         let n = self.num_y;
 
-        let mut image = Image::new(self.num_x - 2, self.num_y - 2, sim_to_canvas_ratio as usize);
+        let mut image =
+            visualization::Image::new(self.num_x - 2, self.num_y - 2, sim_to_canvas_ratio as usize);
 
         // pressure
         if options.pressure {
-            let colormap: Box<dyn Colormap> = match options.colormap.as_str() {
-                "jet" => Box::new(JetColormap {}),
-                "coolwarm" => Box::new(CoolWarmColormap {}),
-                "rainbow" => Box::new(RainbowColormap {}),
-                _ => panic!("unknown colormap"),
-            };
+            let colormap: Box<dyn visualization::Colormap> =
+                visualization::colormap(options.colormap.as_str());
 
             for i in 1..self.num_x - 1 {
                 for j in 1..self.num_y - 1 {
@@ -353,12 +352,9 @@ impl Fluid {
             }
         }
 
-        let width = image.width as u32;
-        let height = image.height as u32;
+        let (_width, height) = image.size();
 
-        let data = image.data;
-
-        let data = ImageData::new_with_u8_clamped_array_and_sh(Clamped(&data), width, height)?;
+        let data = image.try_into()?;
         let r = ctx.put_image_data(&data, 0.0, 0.0);
 
         let text = format!("min: {:.2} max: {:.2} - {:.2} fps", min_p, max_p, 1. / dt);
@@ -477,8 +473,14 @@ impl Fluid {
                 }
 
                 self.s[i * n + j] = s;
+
+                if i == 1 {
+                    // remove the initial velocity set by the vortex shedding scenario
+                    self.u[i * n + j] = 0.0;
+                }
             }
         }
+        self.gravity = -9.81;
     }
 
     /// flow in a pipe and around a circular obstacle with no gravity
@@ -553,117 +555,4 @@ pub struct DrawOptions {
     pub obstacle: bool,
     pub streamlines: bool,
     pub colormap: String,
-}
-
-struct Image {
-    data: Vec<u8>,
-    width: usize,
-    height: usize,
-    resolution: usize,
-}
-
-impl Image {
-    fn new(width: usize, height: usize, resolution: usize) -> Self {
-        let width = width * resolution;
-        let height = height * resolution;
-
-        let data = vec![0_u8; 4 * width * height];
-        Self {
-            data,
-            width,
-            height,
-            resolution,
-        }
-    }
-
-    /// color a resolution by resolution square at (i*resolution, j*resolution)
-    fn paint(&mut self, i: usize, j: usize, color: [u8; 4]) {
-        for ii in 0..self.resolution {
-            for jj in 0..self.resolution {
-                let i = i * self.resolution + ii;
-                let j = j * self.resolution + jj;
-
-                let index = 4 * (i + j * self.width);
-
-                self.data[index] = color[0];
-                self.data[index + 1] = color[1];
-                self.data[index + 2] = color[2];
-                self.data[index + 3] = color[3];
-            }
-        }
-    }
-}
-
-trait Colormap {
-    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4];
-}
-
-struct JetColormap {}
-
-impl Colormap for JetColormap {
-    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
-        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
-        let d = max_ - min_;
-        let x = if d == 0. { 0.5 } else { (x - min_) / d };
-        let m = 0.25;
-        let num = f32::floor(x / m);
-        let s = (x - num * m) / m;
-
-        let (r, g, b) = match num as u8 {
-            0 => (0.0, s, 1.0),
-            1 => (0.0, 1.0, 1. - s),
-            2 => (s, 1.0, 0.),
-            3 => (1.0, 1.0 - s, 0.0),
-            4 => (1.0, 1.0 - s, 0.0),
-            _ => panic!("should not happen"),
-        };
-
-        let r = (r * 255.0) as u8;
-        let g = (g * 255.0) as u8;
-        let b = (b * 255.0) as u8;
-        [r, g, b, 255]
-    }
-}
-
-struct CoolWarmColormap {}
-
-impl Colormap for CoolWarmColormap {
-    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
-        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
-        let d = max_ - min_;
-        let x = if d == 0. { 0.5 } else { (x - min_) / d };
-
-        let r = 0.5 * (1.0 + x);
-        let b = 1.0 - r;
-        let g = 1.0 - (r + b);
-
-        let r = (r * 255.0) as u8;
-        let g = (g * 255.0) as u8;
-        let b = (b * 255.0) as u8;
-        [r, g, b, 255]
-    }
-}
-
-/// Rainbow colormap
-struct RainbowColormap {}
-
-impl Colormap for RainbowColormap {
-    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
-        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
-        let d = max_ - min_;
-        let x = if d == 0. { 0.5 } else { (x - min_) / d };
-
-        let r = if x < 0.5 {
-            1.0 - 2.0 * x
-        } else {
-            2.0 * (x - 0.5)
-        };
-        let g = if x < 0.5 { 2.0 * x } else { 2.0 * (1.0 - x) };
-        let b = if x < 0.5 { 2.0 * x } else { 0.0 };
-
-        let r = (r * 255.0) as u8;
-        let g = (g * 255.0) as u8;
-        let b = (b * 255.0) as u8;
-        [r, g, b, 255]
-    }
 }
