@@ -22,7 +22,7 @@ jobs:
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
         with: 
-          skipContainerUserIdUpdate: true
+          skipContainerUserIdUpdate: false
           runCmd: |
             id
             ls -lah
