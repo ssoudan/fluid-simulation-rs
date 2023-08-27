@@ -5,8 +5,10 @@ pub mod visualization;
 
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::vec;
 
 use simu::DrawOptions;
+use simu::ObstacleType;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -71,34 +73,27 @@ pub fn run_with_selector(
         // If the scenario is not set or has changed, update the fluid.
         let mut scenario = scenario.borrow_mut();
         match scenario.as_ref() {
-            Some(sv) => {
-                if sv != scenario_value.as_str() {
-                    scenario.replace(scenario_value.clone());
-
-                    match scenario_value.as_str() {
-                        "tank" => {
-                            fluid.clear_obstacles();
-                            fluid.tank();
-                        }
-                        // TODO(ssoudan) add a tesla valve scenario
-                        _ => {
-                            fluid.clear_obstacles();
-                            fluid.vortex_shedding();
-                        }
-                    }
-                }
-            }
-            None => {
+            Some(sv) if sv == scenario_value.as_str() => {}
+            _ => {
                 scenario.replace(scenario_value.clone());
 
                 match scenario_value.as_str() {
-                    "tank" => {
+                    "rectangular" => {
                         fluid.clear_obstacles();
-                        fluid.tank();
+                        fluid.vortex_shedding(vec![ObstacleType::Rectangular {
+                            x: 0.2,
+                            y: 0.5,
+                            w: 0.1,
+                            h: 0.3,
+                        }]);
                     }
                     _ => {
                         fluid.clear_obstacles();
-                        fluid.vortex_shedding();
+                        fluid.vortex_shedding(vec![ObstacleType::Circular {
+                            x: 0.5,
+                            y: 0.5,
+                            r: 0.2,
+                        }]);
                     }
                 }
             }

@@ -146,6 +146,27 @@ pub(crate) fn colormap(colormap: &str) -> Box<dyn Colormap> {
         "jet" => Box::new(JetColormap {}),
         "coolwarm" => Box::new(CoolWarmColormap {}),
         "rainbow" => Box::new(RainbowColormap {}),
+        "grayscale" => Box::new(GrayscaleColormap {}),
         _ => panic!("unknown colormap"),
+    }
+}
+
+/// Grayscale colormap
+pub(crate) struct GrayscaleColormap {}
+
+impl Colormap for GrayscaleColormap {
+    fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4] {
+        let x = f32::min(f32::max(x, min_), max_ - 0.0001);
+        let d = max_ - min_;
+        let x = if d == 0. { 0.5 } else { (x - min_) / d };
+
+        let r = x;
+        let g = x;
+        let b = x;
+
+        let r = (r * 255.0) as u8;
+        let g = (g * 255.0) as u8;
+        let b = (b * 255.0) as u8;
+        [r, g, b, 255]
     }
 }

@@ -423,6 +423,172 @@ impl Fluid {
         self.advect_velocity(dt);
         self.advect_smoke(dt);
     }
+
+    pub fn add_obstacle(&mut self, obstacle: impl Obstacle) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
+        let n = self.num_y;
+
+        let vx = 0.0;
+        let vy = 0.0;
+
+        for i in 1..self.num_x - 1 {
+            for j in 1..self.num_y - 1 {
+                let mut s = FLUID;
+
+                if obstacle.is_inside((i as f32 + 0.5) * self.h, (j as f32 + 0.5) * self.h) {
+                    s = OBSTACLE;
+
+                    self.m[i * n + j] = 1.0;
+
+                    self.u[i * n + j] = vx;
+                    self.u[(i + 1) * n + j] = vx;
+                    self.v[i * n + j] = vy;
+                    self.v[i * n + j + 1] = vy;
+                }
+
+                self.s[i * n + j] = s;
+            }
+        }
+    }
+
+    pub fn add_obstacles(&mut self, obstacles: Vec<Box<dyn Obstacle>>) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
+        let n = self.num_y;
+
+        let vx = 0.0;
+        let vy = 0.0;
+
+        for i in 1..self.num_x - 1 {
+            for j in 1..self.num_y - 1 {
+                let mut s = FLUID;
+
+                for obstacle in &obstacles {
+                    if obstacle.is_inside((i as f32 + 0.5) * self.h, (j as f32 + 0.5) * self.h) {
+                        s = OBSTACLE;
+
+                        self.m[i * n + j] = 1.0;
+
+                        self.u[i * n + j] = vx;
+                        self.u[(i + 1) * n + j] = vx;
+                        self.v[i * n + j] = vy;
+                        self.v[i * n + j + 1] = vy;
+                    }
+                }
+
+                self.s[i * n + j] = s;
+            }
+        }
+    }
+
+    /// flow in a pipe and around obstacles with no gravity
+    pub fn vortex_shedding(&mut self, obstacles: Vec<ObstacleType>) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
+        let in_vel = 2.0;
+
+        let n = self.num_y;
+
+        for i in 0..self.num_x {
+            for j in 0..self.num_y {
+                let mut s = FLUID;
+
+                // borders
+                if i == 0 || j == self.num_y - 1 || j == 0 {
+                    s = OBSTACLE;
+                }
+                self.s[i * n + j] = s;
+
+                if i == 1 {
+                    self.u[i * n + j] = in_vel;
+                }
+            }
+        }
+
+        let pipe_h = 0.1 * self.num_y as f32;
+        let min_j = f32::floor(0.5 * self.num_y as f32 - 0.5 * pipe_h) as usize;
+        let max_j = f32::floor(0.5 * self.num_y as f32 + 0.5 * pipe_h) as usize;
+
+        for j in min_j..max_j {
+            self.m[n + j] = 0.;
+        }
+
+        self.gravity = 0.;
+
+        self.add_obstacles(obstacles.into_iter().map(|x| x.into()).collect());
+    }
+
+    // TODO(ssoudan) NACA profile
+
+    /// add a rectangular obstacle
+    pub fn add_rectangular_obstacle(&mut self, x: f32, y: f32, w: f32, h: f32) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
+        let n = self.num_y;
+
+        let vx = 0.0;
+        let vy = 0.0;
+
+        for i in 1..self.num_x - 1 {
+            for j in 1..self.num_y - 1 {
+                // obstacle
+                self.s[i * n + j] = FLUID;
+
+                let dx = (i as f32 + 0.5) * self.h - x;
+                let dy = (j as f32 + 0.5) * self.h - y;
+
+                if dx.abs() < w && dy.abs() < h {
+                    self.s[i * n + j] = OBSTACLE;
+
+                    self.m[i * n + j] = 1.0;
+
+                    self.u[i * n + j] = vx;
+                    self.u[(i + 1) * n + j] = vx;
+                    self.v[i * n + j] = vy;
+                    self.v[i * n + j + 1] = vy;
+                }
+            }
+        }
+    }
+
+    /// add circular obstacle
+    pub fn add_circular_obstacle(&mut self, x: f32, y: f32, r: f32) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
+        let vx = 0.0;
+        let vy = 0.0;
+
+        let n = self.num_y;
+
+        for i in 1..self.num_x - 1 {
+            for j in 1..self.num_y - 1 {
+                // obstacle
+                self.s[i * n + j] = FLUID;
+
+                let dx = (i as f32 + 0.5) * self.h - x;
+                let dy = (j as f32 + 0.5) * self.h - y;
+
+                let d = (dx * dx + dy * dy).sqrt();
+
+                if d < r {
+                    self.s[i * n + j] = OBSTACLE;
+
+                    self.m[i * n + j] = 1.0;
+
+                    self.u[i * n + j] = vx;
+                    self.u[(i + 1) * n + j] = vx;
+                    self.v[i * n + j] = vy;
+                    self.v[i * n + j + 1] = vy;
+                }
+            }
+        }
+    }
 }
 
 #[wasm_bindgen]
@@ -463,102 +629,6 @@ impl Fluid {
 
         self.s.fill(FLUID);
     }
-
-    pub fn tank(&mut self) {
-        const FLUID: f32 = 1.0;
-        const OBSTACLE: f32 = 0.0;
-
-        let n = self.num_y;
-        for i in 0..self.num_x {
-            for j in 0..self.num_y {
-                let mut s = FLUID;
-
-                if i == 0 || i == self.num_x - 1 || j == 0 {
-                    s = OBSTACLE;
-                }
-
-                self.s[i * n + j] = s;
-
-                if i == 1 {
-                    // remove the initial velocity set by the vortex shedding scenario
-                    self.u[i * n + j] = 0.0;
-                }
-            }
-        }
-        self.gravity = -9.81;
-    }
-
-    /// flow in a pipe and around a circular obstacle with no gravity
-    pub fn vortex_shedding(&mut self) {
-        const FLUID: f32 = 1.0;
-        const OBSTACLE: f32 = 0.0;
-
-        let in_vel = 2.0;
-
-        let n = self.num_y;
-
-        for i in 0..self.num_x {
-            for j in 0..self.num_y {
-                let mut s = FLUID;
-
-                if i == 0 || j == self.num_y - 1 || j == 0 {
-                    s = OBSTACLE;
-                }
-                self.s[i * n + j] = s;
-
-                if i == 1 {
-                    self.u[i * n + j] = in_vel;
-                }
-            }
-        }
-
-        let pipe_h = 0.1 * self.num_y as f32;
-        let min_j = f32::floor(0.5 * self.num_y as f32 - 0.5 * pipe_h) as usize;
-        let max_j = f32::floor(0.5 * self.num_y as f32 + 0.5 * pipe_h) as usize;
-
-        for j in min_j..max_j {
-            self.m[n + j] = 0.;
-        }
-
-        self.gravity = 0.;
-        self.add_circular_obstacle(0.4, 0.5, 0.3)
-    }
-
-    // TODO(ssoudan) NACA profile
-
-    /// add circular obstacle
-    pub fn add_circular_obstacle(&mut self, x: f32, y: f32, r: f32) {
-        const FLUID: f32 = 1.0;
-        const OBSTACLE: f32 = 0.0;
-
-        let vx = 0.0;
-        let vy = 0.0;
-
-        let n = self.num_y;
-
-        for i in 1..self.num_x - 1 {
-            for j in 1..self.num_y - 1 {
-                // obstacle
-                self.s[i * n + j] = FLUID;
-
-                let dx = (i as f32 + 0.5) * self.h - x;
-                let dy = (j as f32 + 0.5) * self.h - y;
-
-                let d = (dx * dx + dy * dy).sqrt();
-
-                if d < r {
-                    self.s[i * n + j] = OBSTACLE;
-
-                    self.m[i * n + j] = 1.0;
-
-                    self.u[i * n + j] = vx;
-                    self.u[(i + 1) * n + j] = vx;
-                    self.v[i * n + j] = vy;
-                    self.v[i * n + j + 1] = vy;
-                }
-            }
-        }
-    }
 }
 
 pub struct DrawOptions {
@@ -566,4 +636,80 @@ pub struct DrawOptions {
     pub obstacle: bool,
     pub streamlines: bool,
     pub colormap: String,
+}
+
+/// Obstacle type
+pub enum ObstacleType {
+    /// Rectangular obstacle
+    Rectangular { x: f32, y: f32, w: f32, h: f32 },
+    /// Circular obstacle
+    Circular { x: f32, y: f32, r: f32 },
+}
+
+impl From<ObstacleType> for Box<dyn Obstacle> {
+    fn from(obstacle: ObstacleType) -> Self {
+        match obstacle {
+            ObstacleType::Rectangular { x, y, w, h } => {
+                Box::new(RectangularObstacle::new(x, y, w, h))
+            }
+            ObstacleType::Circular { x, y, r } => Box::new(CircularObstacle::new(x, y, r)),
+        }
+    }
+}
+
+/// Obstacle
+pub trait Obstacle {
+    /// Return true if the given point is inside the obstacle
+    fn is_inside(&self, x: f32, y: f32) -> bool;
+}
+
+/// Rectangular obstacle
+pub(crate) struct RectangularObstacle {
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+}
+
+impl RectangularObstacle {
+    /// Create a new rectangular obstacle
+    pub fn new(x: f32, y: f32, w: f32, h: f32) -> RectangularObstacle {
+        RectangularObstacle { x, y, w, h }
+    }
+}
+
+impl Obstacle for RectangularObstacle {
+    #[inline]
+    fn is_inside(&self, x: f32, y: f32) -> bool {
+        let dx = x - self.x;
+        let dy = y - self.y;
+
+        dx.abs() < self.w && dy.abs() < self.h
+    }
+}
+
+/// Circular obstacle
+pub(crate) struct CircularObstacle {
+    x: f32,
+    y: f32,
+    r: f32,
+}
+
+impl CircularObstacle {
+    /// Create a new circular obstacle
+    pub fn new(x: f32, y: f32, r: f32) -> CircularObstacle {
+        CircularObstacle { x, y, r }
+    }
+}
+
+impl Obstacle for CircularObstacle {
+    #[inline]
+    fn is_inside(&self, x: f32, y: f32) -> bool {
+        let dx = x - self.x;
+        let dy = y - self.y;
+
+        let d = (dx * dx + dy * dy).sqrt();
+
+        d < self.r
+    }
 }
