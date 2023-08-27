@@ -24,6 +24,7 @@ jobs:
         uses: devcontainers/ci@v0.3
         with: 
           skipContainerUserIdUpdate: false
+          push: never
           runCmd: |
             id
             ls -lah
@@ -33,6 +34,10 @@ jobs:
             npm install  
             npm run build
                 
+      - name: Restore permissions
+        run: |
+          sudo chown -R 1001:999 .
+        
       - name: Publish artifacts
         uses: actions/upload-artifact@v3
         with:
