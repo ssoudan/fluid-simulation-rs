@@ -459,17 +459,22 @@ impl Fluid {
 
     /// clear obstacles
     pub fn clear_obstacles(&mut self) {
-        self.s.fill(1.);
+        const FLUID: f32 = 1.0;
+
+        self.s.fill(FLUID);
     }
 
     pub fn tank(&mut self) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
         let n = self.num_y;
         for i in 0..self.num_x {
             for j in 0..self.num_y {
-                let mut s = 1.0; // fluid
+                let mut s = FLUID;
 
                 if i == 0 || i == self.num_x - 1 || j == 0 {
-                    s = 0.0; // obstacle
+                    s = OBSTACLE;
                 }
 
                 self.s[i * n + j] = s;
@@ -485,16 +490,19 @@ impl Fluid {
 
     /// flow in a pipe and around a circular obstacle with no gravity
     pub fn vortex_shedding(&mut self) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
         let in_vel = 2.0;
 
         let n = self.num_y;
 
         for i in 0..self.num_x {
             for j in 0..self.num_y {
-                let mut s = 1.0; // fluid
+                let mut s = FLUID;
 
                 if i == 0 || j == self.num_y - 1 || j == 0 {
-                    s = 0.0; // obstacle
+                    s = OBSTACLE;
                 }
                 self.s[i * n + j] = s;
 
@@ -520,6 +528,9 @@ impl Fluid {
 
     /// add circular obstacle
     pub fn add_circular_obstacle(&mut self, x: f32, y: f32, r: f32) {
+        const FLUID: f32 = 1.0;
+        const OBSTACLE: f32 = 0.0;
+
         let vx = 0.0;
         let vy = 0.0;
 
@@ -528,7 +539,7 @@ impl Fluid {
         for i in 1..self.num_x - 1 {
             for j in 1..self.num_y - 1 {
                 // obstacle
-                self.s[i * n + j] = 1.0;
+                self.s[i * n + j] = FLUID;
 
                 let dx = (i as f32 + 0.5) * self.h - x;
                 let dy = (j as f32 + 0.5) * self.h - y;
@@ -536,7 +547,7 @@ impl Fluid {
                 let d = (dx * dx + dy * dy).sqrt();
 
                 if d < r {
-                    self.s[i * n + j] = 0.0;
+                    self.s[i * n + j] = OBSTACLE;
 
                     self.m[i * n + j] = 1.0;
 

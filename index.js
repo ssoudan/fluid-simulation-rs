@@ -1,3 +1,5 @@
+import "./styles.css";
+
 import('./pkg')
     .then(wasm => {
         // Get the scenario selector
