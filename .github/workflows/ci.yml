@@ -31,8 +31,8 @@ jobs:
             cargo test --all-targets --all-features
             cargo clippy --all-targets --all-features -- -D warnings            
             cargo build
-            npm install  
-            npm run build
+            npm install
+            npm run release
                 
       - name: Restore permissions
         run: |

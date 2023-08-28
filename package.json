@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "release": "webpack -c webpack.config.js --mode production",
     "build": "webpack",
     "serve": "webpack serve"
   },
