@@ -356,7 +356,12 @@ impl Fluid {
         let data = image.try_into()?;
         let r = ctx.put_image_data(&data, 0.0, 0.0);
 
-        let text = format!("min: {:.2} max: {:.2} - {:.2} fps", min_p, max_p, 1. / dt);
+        let text = format!(
+            "min: {:>8.1}\tmax: {:>8.1}\t{:>8.1} fps",
+            min_p,
+            max_p,
+            1. / dt
+        );
 
         let _ = ctx.fill_text(&text, 12., 12.);
 

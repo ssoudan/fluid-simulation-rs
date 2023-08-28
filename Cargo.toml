@@ -2,12 +2,12 @@
 name = "fluid-simulation-rs"
 version = "0.1.0"
 authors = ["Sebastien Soudan <sebastien.soudan@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
-license = "Apache-2.0 OR MIT"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/ssoudan/fluid-simulation-rs"
 
-description = "A fluid simulation in Rust"
+description = "An Eulerian fluid simulation in Rust"
 
 [lib]
 crate-type = ["cdylib"]
@@ -23,7 +23,7 @@ features = [
   'ImageData',
   'CanvasRenderingContext2d',
   'Document',
-  'Element',
+  # 'Element',
   'HtmlCanvasElement',
   'HtmlInputElement',
   'HtmlSelectElement',
