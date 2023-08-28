@@ -6,48 +6,50 @@
 
 <body>
 
-  <h1>Eulerian Fluid Simulation</h1>
-  <div class="controls">
+  <div class="main">
+    <h1>Eulerian Fluid Simulation</h1>
+    <div class="controls">
 
-    <div class="control_line">
-      <!-- scenario  -->
-      <label for="scenario">Scenario</label>
-      <select name="scenario" id="scenario">
-        <option value="cylindrical">Cylindrical obstacle</option>
-        <option value="rectangular">Rectangular obstacle</option>
-      </select>
+      <div class="control_line">
+        <!-- scenario  -->
+        <label for="scenario">Scenario</label>
+        <select name="scenario" id="scenario">
+          <option value="cylindrical">Cylindrical obstacle</option>
+          <option value="rectangular">Rectangular obstacle</option>
+        </select>
 
-      <!-- colormap -->
-      <label for="colormap">Colormap</label>
-      <select name="colormap" id="colormap">
-        <option value="jet">Jet</option>
-        <option value="coolwarm">Coolwarm</option>
-        <option value="rainbow">Rainbow</option>
-        <option value="grayscale">Grayscale</option>
-      </select>
+        <!-- colormap -->
+        <label for="colormap">Colormap</label>
+        <select name="colormap" id="colormap">
+          <option value="jet">Jet</option>
+          <option value="coolwarm">Coolwarm</option>
+          <option value="rainbow">Rainbow</option>
+          <option value="grayscale">Grayscale</option>
+        </select>
+      </div>
+
+      <div class="control_line">
+        <!-- checkbox for pressure -->
+        <input type="checkbox" id="pressure" name="pressure" value="pressure" checked>
+        <label for="pressure">Pressure</label>
+
+        <!-- checkbox for streamlines -->
+        <input type="checkbox" id="streamlines" name="streamlines" value="streamlines" checked>
+        <label for="streamlines">Streamlines</label>
+
+        <!-- slider for streamlines_num_seg -->
+        <label for="streamlines_num_seg">Number of segments</label>
+        <input type="range" id="streamlines_num_seg" name="streamlines_num_seg" min="2" max="20" value="10" step="1">
+
+        <!-- slider for streamlines_spacing -->
+        <label for="streamlines_spacing">Spacing</label>
+        <input type="range" id="streamlines_spacing" name="streamlines_spacing" min="1" max="20" value="6" step="1">
+      </div>
     </div>
 
-    <div class="control_line">
-      <!-- checkbox for pressure -->
-      <input type="checkbox" id="pressure" name="pressure" value="pressure" checked>
-      <label for="pressure">Pressure</label>
 
-      <!-- checkbox for streamlines -->
-      <input type="checkbox" id="streamlines" name="streamlines" value="streamlines" checked>
-      <label for="streamlines">Streamlines</label>
+    <canvas id="canvas" width="1200" height="600"></canvas>
 
-      <!-- slider for streamlines_num_seg -->
-      <label for="streamlines_num_seg">Number of segments</label>
-      <input type="range" id="streamlines_num_seg" name="streamlines_num_seg" min="2" max="20" value="10" step="1">
-
-      <!-- slider for streamlines_spacing -->
-      <label for="streamlines_spacing">Spacing</label>
-      <input type="range" id="streamlines_spacing" name="streamlines_spacing" min="1" max="20" value="6" step="1">
-    </div>
-  </div>
-
-  <div>
-    <canvas id="canvas" style="border:2px solid" width="1200" height="600"></canvas>
   </div>
 
 </body>
