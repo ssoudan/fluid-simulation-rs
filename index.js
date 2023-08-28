@@ -37,7 +37,7 @@ import('./pkg')
         var domainWidth = domainHeight * aspectRatio;
         console.log("domainWidth: " + domainWidth + " domainHeight: " + domainHeight);
 
-        var h = domainHeight / 100.;
+        var h = domainHeight / 150.;
 
         var numX = Math.floor(domainWidth / h);
         var numY = Math.floor(domainHeight / h);
