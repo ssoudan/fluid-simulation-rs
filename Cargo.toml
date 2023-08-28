@@ -23,7 +23,6 @@ features = [
   'ImageData',
   'CanvasRenderingContext2d',
   'Document',
-  # 'Element',
   'HtmlCanvasElement',
   'HtmlInputElement',
   'HtmlSelectElement',
