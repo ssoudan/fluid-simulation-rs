@@ -6,3 +6,14 @@ body {
 canvas {
     background: #cdcdcd;
 }
+
+/* class controls.control_line */
+.controls.control_line {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 30px;
+  padding: 5px;
+  z-index: 100;
+}

@@ -11,6 +11,12 @@ import('./pkg')
         // Get the streamlines checkbox
         const streamlines_checkbox = document.getElementById("streamlines");
 
+        // Get the streamlines_num_seg slider
+        const streamlines_num_seg_slider = document.getElementById("streamlines_num_seg");
+
+        // Get the streamlines_spacing slider
+        const streamlines_spacing_slider = document.getElementById("streamlines_spacing");
+
         // Get the colormap selector
         const colormap_selector = document.getElementById("colormap");
 
@@ -37,7 +43,7 @@ import('./pkg')
         var domainWidth = domainHeight * aspectRatio;
         console.log("domainWidth: " + domainWidth + " domainHeight: " + domainHeight);
 
-        var h = domainHeight / 150.;
+        var h = domainHeight / 100.;
 
         var numX = Math.floor(domainWidth / h);
         var numY = Math.floor(domainHeight / h);
@@ -48,7 +54,6 @@ import('./pkg')
 
         var density = 1000.0;
 
-        const dt = 1.0 / 60.0;
         const numIters = 40;
 
         const overrelaxation = 1.9;
@@ -62,9 +67,10 @@ import('./pkg')
         fluid.clear_obstacles();
 
         // Run the simulation
-        wasm.run_with_selector(dt, numIters, overrelaxation, fluid,
+        wasm.run_with_selector(numIters, overrelaxation, fluid,
             simu_canvas, scenario_selector,
             pressure_checkbox, streamlines_checkbox,
+            streamlines_num_seg_slider, streamlines_spacing_slider,
             colormap_selector,
             sim_to_canvas_ratio)
 

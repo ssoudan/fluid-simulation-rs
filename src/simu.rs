@@ -4,10 +4,9 @@
 //! Code from https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqazhqYnZnQVliZFVwSjdzMVdnSnpfbGJYdkRCZ3xBQ3Jtc0tueVZhRGl4TVdhM25Xa0JEcXRPcmNqNzVpR1VkX3FINzUzZktVY1IxS3I2MWpXNDJfdm9XeExDUTFlbUwwVDY5WW1rZkY4TkR1eE9mTWZIclpDU0ZaVFBIM19qNGdxTjBfZGZGTU9STFVwU1V2a2JmOA&q=https%3A%2F%2Fmatthias-research.github.io%2Fpages%2FtenMinutePhysics%2Findex.html
 use std::{convert::TryInto, vec};
 
+use crate::visualization;
 use wasm_bindgen::prelude::*;
 use web_sys::CanvasRenderingContext2d;
-
-use crate::visualization;
 
 /// A fluid simulation.
 ///
@@ -368,14 +367,13 @@ impl Fluid {
 
             let real_to_canvas = sim_to_canvas_ratio as f64 / self.h as f64;
 
-            const NUM_SEGS: u32 = 10;
             let seg_len = 0.01;
 
             ctx.set_stroke_style(&"rgba(255, 0, 0, 1.)".into());
-            ctx.set_line_width(1.0);
+            ctx.set_line_width(0.8);
 
-            for i in (1..self.num_x - 1).step_by(5) {
-                for j in (1..self.num_y - 1).step_by(5) {
+            for i in (1..self.num_x - 1).step_by(options.streamlines_spacing) {
+                for j in (1..self.num_y - 1).step_by(options.streamlines_spacing) {
                     // center of the cell - real world coordinates
                     let mut x = i as f32 * h + h2;
                     let mut y = j as f32 * h + h2;
@@ -386,7 +384,7 @@ impl Fluid {
                     ctx.begin_path();
                     ctx.move_to(cx, cy);
 
-                    for _k in 0..NUM_SEGS {
+                    for _k in 0..options.streamlines_num_segs {
                         let u = self.sample_field(x, y, Field::U);
                         let v = self.sample_field(x, y, Field::V);
 
@@ -635,6 +633,8 @@ pub struct DrawOptions {
     pub pressure: bool,
     pub obstacle: bool,
     pub streamlines: bool,
+    pub streamlines_spacing: usize,
+    pub streamlines_num_segs: usize,
     pub colormap: String,
 }
 
@@ -673,6 +673,7 @@ pub(crate) struct RectangularObstacle {
 
 impl RectangularObstacle {
     /// Create a new rectangular obstacle
+    #[inline]
     pub fn new(x: f32, y: f32, w: f32, h: f32) -> RectangularObstacle {
         RectangularObstacle { x, y, w, h }
     }
@@ -697,6 +698,7 @@ pub(crate) struct CircularObstacle {
 
 impl CircularObstacle {
     /// Create a new circular obstacle
+    #[inline]
     pub fn new(x: f32, y: f32, r: f32) -> CircularObstacle {
         CircularObstacle { x, y, r }
     }

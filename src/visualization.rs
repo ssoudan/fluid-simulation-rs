@@ -12,6 +12,7 @@ pub(crate) struct Image {
 }
 
 impl Image {
+    #[inline]
     pub(crate) fn new(width: usize, height: usize, resolution: usize) -> Self {
         let width = width * resolution;
         let height = height * resolution;
