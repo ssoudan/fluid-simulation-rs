@@ -6,9 +6,10 @@ See https://matthias-research.github.io/pages/tenMinutePhysics/index.html for th
 
 # Run
 
-In the devcontainer, run
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ssoudan/fluid-simulation-rs)
 
+Run
 ```bash
-npm run serve
+npm i && npm run serve
 ```
 
