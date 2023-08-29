@@ -16,6 +16,9 @@ use web_time::Instant;
 
 use crate::simu::Fluid;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
 }
