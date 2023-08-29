@@ -58,10 +58,13 @@ pub fn run_with_selector(
 
     *g.borrow_mut() = Some(Closure::new(move || {
         let now = Instant::now();
-        let dt = now.duration_since(*previous_frame.borrow()).as_secs_f32() + 1e-5;
+        let dt = now.duration_since(*previous_frame.borrow()).as_secs_f32();
         *previous_frame.borrow_mut() = now;
 
-        fluid.simulate(dt, num_iters, over_relaxation);
+        if dt != 0.0 {
+            // Update the fluid.
+            fluid.simulate(dt, num_iters, over_relaxation);
+        }
 
         let pressure = pressure_checkbox.checked();
 
