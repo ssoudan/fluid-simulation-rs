@@ -35,6 +35,8 @@ use web_sys::CanvasRenderingContext2d;
 pub struct Fluid {
     /// gravity
     gravity: f32,
+    /// in_vel - horizontal velocity at the inlet
+    in_vel: f32,
 
     /// density of the fluid
     density: f32,
@@ -357,10 +359,12 @@ impl Fluid {
         let r = ctx.put_image_data(&data, 0.0, 0.0);
 
         let text = format!(
-            "min: {:>8.1}\tmax: {:>8.1}\t{:>8.1} fps",
+            "min: {:>8.1}\tmax: {:>8.1}\t{:>8.1} fps\tin_vel: {:>4.2}\t gravity: {:>4.2}",
             min_p,
             max_p,
-            1. / dt
+            1. / dt,
+            self.in_vel,
+            self.gravity
         );
 
         let _ = ctx.fill_text(&text, 12., 12.);
@@ -488,11 +492,9 @@ impl Fluid {
     }
 
     /// flow in a pipe and around obstacles with no gravity
-    pub fn vortex_shedding(&mut self, obstacles: Vec<ObstacleType>) {
+    pub fn vortex_shedding(&mut self, in_vel: f32, obstacles: Vec<ObstacleType>) {
         const FLUID: f32 = 1.0;
         const OBSTACLE: f32 = 0.0;
-
-        let in_vel = 2.0;
 
         let n = self.num_y;
 
@@ -521,6 +523,7 @@ impl Fluid {
         }
 
         self.gravity = 0.;
+        self.in_vel = in_vel;
 
         self.add_obstacles(obstacles.into_iter().map(|x| x.into()).collect());
     }
@@ -596,7 +599,14 @@ impl Fluid {
 
 #[wasm_bindgen]
 impl Fluid {
-    pub fn create(gravity: f32, num_x: usize, num_y: usize, h: f32, density: f32) -> Fluid {
+    pub fn create(
+        gravity: f32,
+        in_vel: f32,
+        num_x: usize,
+        num_y: usize,
+        h: f32,
+        density: f32,
+    ) -> Fluid {
         let num_x = num_x + 2; // 2 border cells
         let num_y = num_y + 2;
 
@@ -611,6 +621,7 @@ impl Fluid {
         let new_m = vec![0.0; num_cells];
         Fluid {
             gravity,
+            in_vel,
             density,
             num_x,
             num_y,

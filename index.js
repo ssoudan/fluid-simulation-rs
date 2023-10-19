@@ -17,6 +17,9 @@ import('./pkg')
         // Get the streamlines_spacing slider
         const streamlines_spacing_slider = document.getElementById("streamlines_spacing");
 
+        // Get the in_vel slider
+        const in_vel_slider = document.getElementById("in_vel");
+
         // Get the colormap selector
         const colormap_selector = document.getElementById("colormap");
 
@@ -58,10 +61,12 @@ import('./pkg')
 
         const overrelaxation = 1.9;
 
-        const gravity = -9.81;
+        const gravity = 0.;
+
+        const in_vel = 0.8;
 
         // Create the fluid simulation
-        const fluid = wasm.Fluid.create(gravity, numX, numY, h, density)
+        const fluid = wasm.Fluid.create(gravity, in_vel, numX, numY, h, density)
 
         // Setup the obstacles
         fluid.clear_obstacles();
@@ -71,6 +76,7 @@ import('./pkg')
             simu_canvas, scenario_selector,
             pressure_checkbox, streamlines_checkbox,
             streamlines_num_seg_slider, streamlines_spacing_slider,
+            in_vel_slider,
             colormap_selector,
             sim_to_canvas_ratio)
 

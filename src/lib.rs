@@ -39,6 +39,7 @@ pub fn run_with_selector(
     streamlines_checkbox: web_sys::HtmlInputElement,
     streamlines_num_segs: web_sys::HtmlInputElement,
     streamlines_spacing: web_sys::HtmlInputElement,
+    in_vel: web_sys::HtmlInputElement,
     colormap_selector: web_sys::HtmlSelectElement,
     sim_to_canvas_ratio: u32,
 ) -> Result<(), JsValue> {
@@ -47,7 +48,7 @@ pub fn run_with_selector(
 
     let previous_frame = Rc::new(RefCell::new(Instant::now()));
 
-    let scenario = Rc::new(RefCell::new(None::<String>));
+    let scenario = Rc::new(RefCell::new(None::<(String, f32)>));
 
     let context = canvas
         .get_context("2d")
@@ -75,6 +76,8 @@ pub fn run_with_selector(
         let streamlines_num_segs = streamlines_num_segs.value_as_number() as usize;
         let streamlines_spacing = streamlines_spacing.value_as_number() as usize;
 
+        let in_vel = in_vel.value_as_number() as f32;
+
         let options = DrawOptions {
             pressure,
             obstacle: true,
@@ -90,27 +93,33 @@ pub fn run_with_selector(
         // If the scenario is not set or has changed, update the fluid.
         let mut scenario = scenario.borrow_mut();
         match scenario.as_ref() {
-            Some(sv) if sv == scenario_value.as_str() => {}
+            Some((sv, in_vel_)) if (sv == scenario_value.as_str()) && (*in_vel_ == in_vel) => {}
             _ => {
-                scenario.replace(scenario_value.clone());
+                scenario.replace((scenario_value.clone(), in_vel));
 
                 match scenario_value.as_str() {
                     "rectangular" => {
                         fluid.clear_obstacles();
-                        fluid.vortex_shedding(vec![ObstacleType::Rectangular {
-                            x: 0.2,
-                            y: 0.5,
-                            w: 0.1,
-                            h: 0.3,
-                        }]);
+                        fluid.vortex_shedding(
+                            in_vel,
+                            vec![ObstacleType::Rectangular {
+                                x: 0.2,
+                                y: 0.5,
+                                w: 0.1,
+                                h: 0.3,
+                            }],
+                        );
                     }
                     _ => {
                         fluid.clear_obstacles();
-                        fluid.vortex_shedding(vec![ObstacleType::Circular {
-                            x: 0.5,
-                            y: 0.5,
-                            r: 0.2,
-                        }]);
+                        fluid.vortex_shedding(
+                            in_vel,
+                            vec![ObstacleType::Circular {
+                                x: 0.5,
+                                y: 0.5,
+                                r: 0.2,
+                            }],
+                        );
                     }
                 }
             }
