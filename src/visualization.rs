@@ -4,6 +4,7 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::{Clamped, JsValue};
 
+//// An image
 pub(crate) struct Image {
     data: Vec<u8>,
     width: usize,
@@ -16,6 +17,8 @@ impl Image {
     pub(crate) fn new(width: usize, height: usize, resolution: usize) -> Self {
         let width = width * resolution;
         let height = height * resolution;
+
+        let resolution = resolution;
 
         let data = vec![0_u8; 4 * width * height];
         Self {
@@ -68,7 +71,9 @@ impl TryFrom<Image> for web_sys::ImageData {
     }
 }
 
+/// A Colormap
 pub(crate) trait Colormap {
+    /// Get the color for a value in a range
     fn get_color(&self, x: f32, min_: f32, max_: f32) -> [u8; 4];
 }
 
